@@ -42,7 +42,7 @@ def main():
 def get_input_file_path(day: int, test: bool) -> str:
     script_path = os.path.realpath(__file__)
     input_dir = os.path.join(os.path.dirname(script_path), f"../inputs")
-    file_name = f"day-{day:02}-test.txt" if test else f"day-{day:02}.txt"
+    file_name = f"day-{day:02}{'-test' if test else ''}.txt"
     return os.path.join(input_dir, file_name)
 
 
