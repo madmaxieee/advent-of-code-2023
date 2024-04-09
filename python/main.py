@@ -15,6 +15,7 @@ def main():
 
     with open(input_file_path) as file:
         lines = file.readlines()
+        lines = [line.strip() for line in lines]
 
     module = __import__(f"day-{args.day:02}")
 
