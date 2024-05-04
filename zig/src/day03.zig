@@ -11,7 +11,7 @@ const util = @import("util.zig");
 const gpa = util.gpa;
 
 pub fn main() !void {
-    const data: []const u8 = data: {
+    const data: []const u8 = comptime data: {
         if (config.use_test_data) {
             break :data @embedFile("inputs/day-03-test.txt");
         } else {
