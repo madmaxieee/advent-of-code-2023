@@ -36,10 +36,30 @@ pub fn main() !void {
 
 fn part1(data: []const u8) ![]u8 {
     var lines_iter = tokenizeAny(u8, data, "\n");
+    var result: u32 = 0;
     while (lines_iter.next()) |line| {
-        _ = line;
+        {
+            var i: usize = 0;
+            while (i < line.len) : (i += 1) {
+                const c: u8 = line[i];
+                if (c >= '0' and c <= '9') {
+                    result += 10 * (c - '0');
+                    break;
+                }
+            }
+        }
+        {
+            var i: usize = 0;
+            while (i < line.len) : (i += 1) {
+                const c: u8 = line[line.len - 1 - i];
+                if (c >= '0' and c <= '9') {
+                    result += c - '0';
+                    break;
+                }
+            }
+        }
     }
-    return util.format("{}", .{null});
+    return util.format("{}", .{result});
 }
 
 fn part2(data: []const u8) ![]u8 {
