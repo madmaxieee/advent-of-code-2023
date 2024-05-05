@@ -21,29 +21,29 @@ pub fn main() !void {
     if (config.part == 1 or config.part == 0) {
         print("Part 1:\n", .{});
         var t = try std.time.Timer.start();
-        const result1 = try part1(data);
-        try util.stdout.print("{s}\n", .{result1});
+        const answer1 = try part1(data);
+        try util.stdout.print("{s}\n", .{answer1});
         print("Time elapsed: {}\n", .{std.fmt.fmtDuration(t.read())});
     }
     if (config.part == 2 or config.part == 0) {
         print("Part 2:\n", .{});
         var t = try std.time.Timer.start();
-        const result2 = try part2(data);
-        try util.stdout.print("{s}\n", .{result2});
+        const answer2 = try part2(data);
+        try util.stdout.print("{s}\n", .{answer2});
         print("Time elapsed: {}\n", .{std.fmt.fmtDuration(t.read())});
     }
 }
 
 fn part1(data: []const u8) ![]u8 {
     var lines_iter = tokenizeAny(u8, data, "\n");
-    var result: u32 = 0;
+    var answer: u32 = 0;
     while (lines_iter.next()) |line| {
         {
             var i: usize = 0;
             while (i < line.len) : (i += 1) {
                 const c: u8 = line[i];
                 if (c >= '0' and c <= '9') {
-                    result += 10 * (c - '0');
+                    answer += 10 * (c - '0');
                     break;
                 }
             }
@@ -53,21 +53,95 @@ fn part1(data: []const u8) ![]u8 {
             while (i < line.len) : (i += 1) {
                 const c: u8 = line[line.len - 1 - i];
                 if (c >= '0' and c <= '9') {
-                    result += c - '0';
+                    answer += c - '0';
                     break;
                 }
             }
         }
     }
-    return util.format("{}", .{result});
+    return util.format("{}", .{answer});
 }
 
 fn part2(data: []const u8) ![]u8 {
     var lines_iter = tokenizeAny(u8, data, "\n");
+    var answer: usize = 0;
+    const number_strings = [_][]const u8{
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+    };
+    const NumPos = struct {
+        pos: usize,
+        val: usize,
+    };
     while (lines_iter.next()) |line| {
-        _ = line;
+        var current_num: usize = 0;
+        {
+            var first_number_pos: NumPos = .{
+                .pos = std.math.maxInt(usize),
+                .val = 0,
+            };
+            for (number_strings, 0..10) |number_string, i| {
+                if (number_string.len > line.len) {
+                    continue;
+                }
+                const pos = indexOfStr(u8, line, 0, number_string);
+                if (pos != null and pos.? < first_number_pos.pos) {
+                    first_number_pos = .{
+                        .pos = pos.?,
+                        .val = i,
+                    };
+                }
+            }
+            for (0..10) |i| {
+                const pos = indexOf(u8, line, @truncate(i + '0'));
+                if (pos != null and pos.? < first_number_pos.pos) {
+                    first_number_pos = .{
+                        .pos = pos.?,
+                        .val = i,
+                    };
+                }
+            }
+            current_num += first_number_pos.val * 10;
+        }
+        {
+            var last_number_pos: NumPos = .{
+                .pos = 0,
+                .val = 0,
+            };
+            for (number_strings, 0..10) |number_string, i| {
+                if (number_string.len > line.len) {
+                    continue;
+                }
+                const pos = lastIndexOfStr(u8, line, number_string);
+                if (pos != null and pos.? >= last_number_pos.pos) {
+                    last_number_pos = .{
+                        .pos = pos.?,
+                        .val = i,
+                    };
+                }
+            }
+            for (0..10) |i| {
+                const pos = lastIndexOf(u8, line, @truncate(i + '0'));
+                if (pos != null and pos.? >= last_number_pos.pos) {
+                    last_number_pos = .{
+                        .pos = pos.?,
+                        .val = i,
+                    };
+                }
+            }
+            current_num += last_number_pos.val;
+        }
+        answer += current_num;
     }
-    return util.format("{}", .{null});
+    return util.format("{}", .{answer});
 }
 
 const tokenizeAny = std.mem.tokenizeAny;
