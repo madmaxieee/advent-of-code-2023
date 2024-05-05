@@ -21,15 +21,15 @@ pub fn main() !void {
     if (config.part == 1 or config.part == 0) {
         print("Part 1:\n", .{});
         var t = try std.time.Timer.start();
-        const result1 = try part1(data);
-        try util.stdout.print("{s}\n", .{result1});
+        const answer1 = try part1(data);
+        try util.stdout.print("{s}\n", .{answer1});
         print("Time elapsed: {}\n", .{std.fmt.fmtDuration(t.read())});
     }
     if (config.part == 2 or config.part == 0) {
         print("Part 2:\n", .{});
         var t = try std.time.Timer.start();
-        const result2 = try part2(data);
-        try util.stdout.print("{s}\n", .{result2});
+        const answer2 = try part2(data);
+        try util.stdout.print("{s}\n", .{answer2});
         print("Time elapsed: {}\n", .{std.fmt.fmtDuration(t.read())});
     }
 }
