@@ -6,15 +6,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Day2 implements Solution {
+
+    private static final int RED_COUNT = 12;
+    private static final int BLUE_COUNT = 14;
+    private static final int GREEN_COUNT = 13;
+
     @Override
     public String solvePart1(final String input) {
-        final int red_count = 12;
-        final int blue_count = 14;
-        final int green_count = 13;
         int sum = 0;
         for (String line : input.split("\n")) {
             Game game = Game.fromString(line);
-            if (game.isPossible(red_count, blue_count, green_count)) {
+            if (game.isPossible(RED_COUNT, BLUE_COUNT, GREEN_COUNT)) {
                 sum += game.id;
             }
         }
@@ -26,13 +28,13 @@ public final class Day2 implements Solution {
         int sum = 0;
         for (String line : input.split("\n")) {
             Game game = Game.fromString(line);
-            int fewest_red = 0, fewest_blue = 0, fewest_green = 0;
+            int fewestRed = 0, fewestBlue = 0, fewestGreen = 0;
             for (Round round : game.rounds) {
-                fewest_red = Math.max(fewest_red, round.red);
-                fewest_blue = Math.max(fewest_blue, round.blue);
-                fewest_green = Math.max(fewest_green, round.green);
+                fewestRed = Math.max(fewestRed, round.red);
+                fewestBlue = Math.max(fewestBlue, round.blue);
+                fewestGreen = Math.max(fewestGreen, round.green);
             }
-            int power = fewest_red * fewest_blue * fewest_green;
+            int power = fewestRed * fewestBlue * fewestGreen;
             sum += power;
         }
         return Integer.toString(sum);
@@ -58,6 +60,7 @@ class Round {
 class Game {
     final int id;
     final List<Round> rounds;
+    final static Pattern round_pattern = Pattern.compile("(\\d+) (red|blue|green)");
 
     public Game(int id) {
         this.id = id;
@@ -65,13 +68,24 @@ class Game {
     }
 
     public static Game fromString(String line) {
-        String id_str = line.split(": ")[0].substring(5);
-        int id = Integer.parseInt(id_str);
+        String[] parts = line.split(": ");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid input: " + line);
+        }
+
+        int id;
+        String id_str = parts[0].substring(5);
+        try {
+            id = Integer.parseInt(id_str);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid game id: " + id_str);
+        }
+
         Game game = new Game(id);
-        String[] rounds = line.split(": ")[1].split("; ");
-        Pattern pattern = Pattern.compile("(\\d+) (red|blue|green)");
+        String[] rounds = parts[1].split("; ");
+
         for (String round : rounds) {
-            Matcher matcher = pattern.matcher(round);
+            Matcher matcher = round_pattern.matcher(round);
             int red = 0, blue = 0, green = 0;
             while (matcher.find()) {
                 int count = Integer.parseInt(matcher.group(1));
@@ -85,8 +99,6 @@ class Game {
                         break;
                     case "green":
                         green = count;
-                        break;
-                    default:
                         break;
                 }
             }
