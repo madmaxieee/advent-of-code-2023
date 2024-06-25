@@ -6,6 +6,7 @@ package madmaxieee.aoc2023;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.OptionalInt;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -40,12 +41,14 @@ public class App {
             return;
         }
 
-        int part;
-        try {
-            part = Integer.parseInt(cmd.getOptionValue("part"));
-        } catch (Exception e) {
-            System.out.println("Part must be an integer, got: " + cmd.getOptionValue("part"));
-            return;
+        OptionalInt part = OptionalInt.empty();
+        if (cmd.hasOption("part")) {
+            try {
+                part = OptionalInt.of(Integer.parseInt(cmd.getOptionValue("part")));
+            } catch (Exception e) {
+                System.out.println("Part must be an integer, got: " + cmd.getOptionValue("part"));
+                return;
+            }
         }
 
         boolean test = cmd.hasOption("test");
@@ -55,14 +58,18 @@ public class App {
             return;
         }
 
-        if (part != 1 && part != 2) {
-            System.out.println("Part must be 1 or 2, got: " + part);
-            return;
-        }
-
         String input = readInput(day, test);
-        String result = solve(day, part, input);
-        System.out.println(result);
+
+        if (part.isEmpty()) {
+            System.out.println("Part 1:\n" + solve(day, 1, input));
+            System.out.println("Part 2:\n" + solve(day, 2, input));
+        } else {
+            switch (part.getAsInt()) {
+                case 1 -> System.out.println("Part 1:\n" + solve(day, 1, input));
+                case 2 -> System.out.println("Part 2:\n" + solve(day, 2, input));
+                default -> System.out.println("Part must be 1 or 2, got: " + part.getAsInt());
+            }
+        }
     }
 
     private static String readInput(int day, boolean test) {

@@ -40,8 +40,8 @@ public class Day1 implements Solution {
         OptionalInt first_value = OptionalInt.empty();
         for (int i = 0; i < line.length(); i++) {
             if (Character.isDigit(line.charAt(i))) {
-                    first_index = i;
-                    first_value = OptionalInt.of(line.charAt(i) - '0');
+                first_index = i;
+                first_value = OptionalInt.of(line.charAt(i) - '0');
                 break;
             }
         }
