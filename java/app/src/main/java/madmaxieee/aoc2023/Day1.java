@@ -2,7 +2,7 @@ package madmaxieee.aoc2023;
 
 import java.util.OptionalInt;
 
-public class Day1 implements Solution {
+public final class Day1 implements Solution {
     @Override
     public String solvePart1(final String input) {
         int sum = 0;

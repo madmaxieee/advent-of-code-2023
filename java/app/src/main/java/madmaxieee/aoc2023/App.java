@@ -86,6 +86,7 @@ public class App {
     private static String solve(int day_num, int part, String input) {
         Solution day = switch (day_num) {
             case 1 -> new Day1();
+            case 2 -> new Day2();
             default -> throw new UnsupportedOperationException("Unimplemented day: " + day_num);
         };
 
