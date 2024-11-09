@@ -1,6 +1,5 @@
 from collections import deque
 from dataclasses import dataclass
-from functools import lru_cache
 
 
 def part_1(input: list[str]) -> str:
@@ -18,16 +17,28 @@ def part_2(input: list[str]) -> str:
 
 
 @dataclass
-class Maps:
-    seed2soil: dict[int, int]
-    soil2fertilizer: dict[int, int]
-    fertilizer2water: dict[int, int]
-    water2light: dict[int, int]
-    light2temperature: dict[int, int]
-    temperature2humidity: dict[int, int]
-    humidity2location: dict[int, int]
+class MapEntry:
+    dest_head: int
+    src_head: int
+    length: int
 
-    @lru_cache
+    @classmethod
+    def from_string(cls, line: str):
+        nums = [int(n) for n in line.split()]
+        assert len(nums) == 3
+        return cls(nums[0], nums[1], nums[2])
+
+
+@dataclass
+class Maps:
+    seed2soil: list[MapEntry]
+    soil2fertilizer: list[MapEntry]
+    fertilizer2water: list[MapEntry]
+    water2light: list[MapEntry]
+    light2temperature: list[MapEntry]
+    temperature2humidity: list[MapEntry]
+    humidity2location: list[MapEntry]
+
     def get_seed2location(self, seed: int) -> int:
         soil = self.lookup(self.seed2soil, seed)
         fertilizer = self.lookup(self.soil2fertilizer, soil)
@@ -39,38 +50,38 @@ class Maps:
         return location
 
     @staticmethod
-    def lookup(map: dict[int, int], key: int) -> int:
-        if key in map:
-            return map[key]
-        else:
-            return key
+    def lookup(map: list[MapEntry], key: int) -> int:
+        for entry in map:
+            if entry.src_head <= key < entry.src_head + entry.length:
+                return entry.dest_head + key - entry.src_head
+        return key
 
     @classmethod
     def parse(cls, input: deque[str]):
-        seed2soil = {}
-        soil2fertilizer = {}
-        fertilizer2water = {}
-        water2light = {}
-        light2temperature = {}
-        temperature2humidity = {}
-        humidity2location = {}
+        seed2soil = []
+        soil2fertilizer = []
+        fertilizer2water = []
+        water2light = []
+        light2temperature = []
+        temperature2humidity = []
+        humidity2location = []
 
         while len(input) > 0:
             line = input.popleft()
             if line.startswith("seed-to-soil "):
-                cls.parse_map(seed2soil, input)
+                seed2soil = cls.parse_map(input)
             elif line.startswith("soil-to-fertilizer "):
-                cls.parse_map(soil2fertilizer, input)
+                soil2fertilizer = cls.parse_map(input)
             elif line.startswith("fertilizer-to-water "):
-                cls.parse_map(fertilizer2water, input)
+                fertilizer2water = cls.parse_map(input)
             elif line.startswith("water-to-light "):
-                cls.parse_map(water2light, input)
+                water2light = cls.parse_map(input)
             elif line.startswith("light-to-temperature "):
-                cls.parse_map(light2temperature, input)
+                light2temperature = cls.parse_map(input)
             elif line.startswith("temperature-to-humidity "):
-                cls.parse_map(temperature2humidity, input)
+                temperature2humidity = cls.parse_map(input)
             elif line.startswith("humidity-to-location "):
-                cls.parse_map(humidity2location, input)
+                humidity2location = cls.parse_map(input)
 
         return cls(
             seed2soil,
@@ -83,15 +94,11 @@ class Maps:
         )
 
     @staticmethod
-    def parse_map(d: dict[int, int], input: deque[str]):
+    def parse_map(input: deque[str]) -> list[MapEntry]:
+        map_entries = []
         while len(input) > 0:
             line = input.popleft()
             if line == "":
                 break
-            nums = [int(n) for n in line.split()]
-            assert len(nums) == 3
-            for i in range(nums[2]):
-                d[nums[1] + i] = nums[0] + i
-
-    def __hash__(self):
-        return id(self)
+            map_entries.append(MapEntry.from_string(line))
+        return map_entries
