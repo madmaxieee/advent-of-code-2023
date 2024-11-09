@@ -8,25 +8,59 @@ def part_1(input: list[str]) -> str:
     seeds = [int(s) for s in seeds_line.split(": ")[1].split()]
     input_queue.popleft()
     maps = Maps.parse(input_queue)
-    min_location = min(maps.get_seed2location(seed) for seed in seeds)
+    min_location = min(maps.get_location(seed) for seed in seeds)
     return str(min_location)
 
 
 def part_2(input: list[str]) -> str:
-    return "Part 2"
+    input_queue = deque(input)
+    seeds_line = input_queue.popleft()
+    input_queue.popleft()
+    nums = [int(s) for s in seeds_line.split(": ")[1].split()]
+    seed_ranges = [Range(nums[i], nums[i + 1]) for i in range(0, len(nums), 2)]
+    maps = Maps.parse(input_queue)
+    location_ranges = maps.get_location_ranges(seed_ranges)
+    return str(location_ranges[0].head)
 
 
-@dataclass
+class Range:
+    head: int
+    len: int
+    tail: int
+
+    def __init__(self, head: int, len: int):
+        self.head = head
+        self.len = len
+        self.tail = head + len
+        assert self.len >= 0
+
+    def __repr__(self):
+        return f"[{self.head}, {self.tail})"
+
+
 class MapEntry:
-    dest_head: int
-    src_head: int
-    length: int
+    dst: int
+    src: int
+    len: int
+    dst_tail: int
+    src_tail: int
+
+    def __init__(self, dst: int, src: int, len: int):
+        self.dst = dst
+        self.src = src
+        self.len = len
+        self.dst_tail = dst + len
+        self.src_tail = src + len
+        assert self.len >= 0
 
     @classmethod
     def from_string(cls, line: str):
         nums = [int(n) for n in line.split()]
         assert len(nums) == 3
         return cls(nums[0], nums[1], nums[2])
+
+    def __repr__(self):
+        return f"[{self.src}, {self.src_tail}) -> [{self.dst}, {self.dst_tail})"
 
 
 @dataclass
@@ -39,22 +73,25 @@ class Maps:
     temperature2humidity: list[MapEntry]
     humidity2location: list[MapEntry]
 
-    def get_seed2location(self, seed: int) -> int:
-        soil = self.lookup(self.seed2soil, seed)
-        fertilizer = self.lookup(self.soil2fertilizer, soil)
-        water = self.lookup(self.fertilizer2water, fertilizer)
-        light = self.lookup(self.water2light, water)
-        temperature = self.lookup(self.light2temperature, light)
-        humidity = self.lookup(self.temperature2humidity, temperature)
-        location = self.lookup(self.humidity2location, humidity)
+    def get_location(self, seed: int) -> int:
+        soil = lookup(self.seed2soil, seed)
+        fertilizer = lookup(self.soil2fertilizer, soil)
+        water = lookup(self.fertilizer2water, fertilizer)
+        light = lookup(self.water2light, water)
+        temperature = lookup(self.light2temperature, light)
+        humidity = lookup(self.temperature2humidity, temperature)
+        location = lookup(self.humidity2location, humidity)
         return location
 
-    @staticmethod
-    def lookup(map: list[MapEntry], key: int) -> int:
-        for entry in map:
-            if entry.src_head <= key < entry.src_head + entry.length:
-                return entry.dest_head + key - entry.src_head
-        return key
+    def get_location_ranges(self, seed_ranges: list[Range]) -> list[Range]:
+        soil_ranges = map_ranges(self.seed2soil, seed_ranges)
+        fertilizer_ranges = map_ranges(self.soil2fertilizer, soil_ranges)
+        water_ranges = map_ranges(self.fertilizer2water, fertilizer_ranges)
+        light_ranges = map_ranges(self.water2light, water_ranges)
+        temperature_ranges = map_ranges(self.light2temperature, light_ranges)
+        humidity_ranges = map_ranges(self.temperature2humidity, temperature_ranges)
+        location_ranges = map_ranges(self.humidity2location, humidity_ranges)
+        return location_ranges
 
     @classmethod
     def parse(cls, input: deque[str]):
@@ -101,4 +138,48 @@ class Maps:
             if line == "":
                 break
             map_entries.append(MapEntry.from_string(line))
-        return map_entries
+        return sorted(map_entries, key=lambda entry: entry.src)
+
+
+def lookup(map: list[MapEntry], key: int) -> int:
+    for entry in map:
+        if entry.src <= key < entry.src_tail:
+            return entry.dst + key - entry.src
+    return key
+
+
+def map_range(entries: list[MapEntry], r: Range) -> list[Range]:
+    if r.len == 0:
+        return []
+    result: list[Range] = []
+    for e in entries:
+        if e.src <= r.head < r.tail <= e.src_tail:
+            result.append(Range(e.dst + r.head - e.src, r.len))
+        elif e.src <= r.head < e.src_tail <= r.tail:
+            result.append(Range(e.dst + r.head - e.src, e.src_tail - r.head))
+            result.extend(map_range(entries, Range(e.src_tail, r.tail - e.src_tail)))
+        elif r.head <= e.src < r.tail <= e.src_tail:
+            result.append(Range(e.dst, r.tail - e.src))
+            result.extend(map_range(entries, Range(r.head, e.src - r.head)))
+        elif r.head <= e.src <= e.src_tail <= r.tail:
+            result.append(Range(e.dst, e.len))
+            result.extend(map_range(entries, Range(r.head, e.src - r.head)))
+            result.extend(map_range(entries, Range(e.src_tail, r.tail - e.src_tail)))
+    if len(result) == 0:
+        result.append(r)
+        return result
+    result.sort(key=lambda r: r.head)
+    merged_result = [result[0]]
+    for r in result[1:]:
+        if merged_result[-1].tail >= r.head:
+            merged_result[-1].len = r.tail - merged_result[-1].head
+        else:
+            merged_result.append(r)
+    return merged_result
+
+
+def map_ranges(entries: list[MapEntry], ranges: list[Range]) -> list[Range]:
+    result = []
+    for r in ranges:
+        result.extend(map_range(entries, r))
+    return sorted(result, key=lambda r: r.head)
