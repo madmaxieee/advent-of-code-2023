@@ -1,8 +1,10 @@
 from collections import deque
 from dataclasses import dataclass
 
+__all__ = ["part_1", "part_2"]
 
-def part_1(input: list[str]) -> str:
+
+def part_1(input: list[str]):
     input_queue = deque(input)
     seeds_line = input_queue.popleft()
     seeds = [int(s) for s in seeds_line.split(": ")[1].split()]
@@ -12,7 +14,7 @@ def part_1(input: list[str]) -> str:
     return str(min_location)
 
 
-def part_2(input: list[str]) -> str:
+def part_2(input: list[str]):
     input_queue = deque(input)
     seeds_line = input_queue.popleft()
     input_queue.popleft()

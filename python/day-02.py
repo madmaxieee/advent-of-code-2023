@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+__all__ = ["part_1", "part_2"]
+
 
 @dataclass
 class GameStats:
@@ -8,7 +10,7 @@ class GameStats:
     rounds: list[dict[str, int]]
 
 
-def part_1(input: list[str]) -> str:
+def part_1(input: list[str]):
     num_cubes = {"red": 12, "green": 13, "blue": 14}
     solution = 0
     for line in input:
@@ -25,7 +27,7 @@ def part_1(input: list[str]) -> str:
     return str(solution)
 
 
-def part_2(input: list[str]) -> str:
+def part_2(input: list[str]):
     solution = 0
     for line in input:
         game_stats = parse_game(line)

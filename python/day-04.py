@@ -1,14 +1,16 @@
 import re
 from dataclasses import dataclass
 
+__all__ = ["part_1", "part_2"]
 
-def part_1(input: list[str]) -> str:
+
+def part_1(input: list[str]):
     cards = [ScratchCard.from_string(line) for line in input]
     total_score = sum(2 ** card.num_matches() // 2 for card in cards)
     return str(total_score)
 
 
-def part_2(input: list[str]) -> str:
+def part_2(input: list[str]):
     cards = [ScratchCard.from_string(line) for line in input]
     num_copies = [1] * len(cards)
     for card in cards:

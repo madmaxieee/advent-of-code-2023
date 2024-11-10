@@ -1,4 +1,7 @@
-def part_1(input: list[str]) -> str:
+__all__ = ["part_1", "part_2"]
+
+
+def part_1(input: list[str]):
     solution = 0
     zero = ord("0")
     nine = ord("9")
@@ -16,7 +19,7 @@ def part_1(input: list[str]) -> str:
     return str(solution)
 
 
-def part_2(input: list[str]) -> str:
+def part_2(input: list[str]):
     solution = 0
     zero = ord("0")
     nine = ord("9")
